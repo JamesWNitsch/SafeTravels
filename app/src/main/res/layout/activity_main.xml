@@ -1,0 +1,107 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Where are you traveling from?"
+        android:id="@+id/originEditTextView"/>
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Where are you traveling to?"
+        android:id="@+id/destinationEditTextView"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="Are you making any stops in between? If not, leave these blank."
+            android:paddingBottom="12dp"/>
+
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <EditText
+                android:hint="First Waypoint"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/firstWaypointEditText"
+                android:layout_alignParentTop="true"/>
+
+            <EditText
+                android:hint="time stopped"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/firstWaypointTimeStoppedEditText"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                />
+
+            <EditText
+                android:hint="Second Waypoint"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/secondWaypointEditText"
+                android:layout_below="@+id/firstWaypointEditText"/>
+
+            <EditText
+                android:hint="time stopped"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/secondWaypointTimeStoppedEditText"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/firstWaypointEditText"
+                />
+
+            <EditText
+                android:hint="Third Waypoint"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/thirdWaypointEditText"
+                android:layout_below="@+id/secondWaypointEditText"/>
+            <EditText
+                android:hint="time stopped"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/thirdWaypointTimeStoppedEditText"
+                android:layout_below="@+id/secondWaypointEditText"
+                android:layout_alignParentRight="true"/>
+
+        </RelativeLayout>
+
+       </LinearLayout>
+
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Load 'er up!"
+        android:onClick="commitAndSend"/>
+    <TextView
+        android:paddingTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Display ResultURL"
+        android:id="@+id/results"/>
+
+
+</LinearLayout>
