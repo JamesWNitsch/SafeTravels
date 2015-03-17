@@ -146,8 +146,8 @@ public class MainActivity extends ActionBarActivity {
         results = (TextView) findViewById(R.id.results);
 
         //Just for testing
-        originEditText.setText("Princeton,NJ");
-        destinationEditText.setText("Lawrenceville, NJ");
+        originEditText.setText("Richmond, VA");
+        destinationEditText.setText("New York, NY");
         //firstWaypointEditText.setText("Toronto,Canada");
         //secondWaypointEditText.setText("Princeton,NJ");
 
