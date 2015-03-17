@@ -1,5 +1,6 @@
 package com.example.jamesn.safetravels;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import org.apache.http.client.methods.HttpGet;
 
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.joda.time.DateTimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -47,17 +51,12 @@ public class MainActivity extends ActionBarActivity {
     private EditText thirdWaypointEditText;
     private TextView results;
 
-
-    public String tempResults;
+    public String internetQueryResults;
     public Object lock= new Object();
-
-
 
     //Json Arrays and Objects for weather and directions
     public JSONArray legsArray;
-    private JSONObject[] waypointWeatherFull;
-    //private JSONObject[][] waypointWeatherHourly; TODO remove
-
+    private JSONObject waypointWeatherFull;
 
     //Variables from the Json data for weather
 
@@ -69,24 +68,34 @@ public class MainActivity extends ActionBarActivity {
     //https://maps.googleapis.com/maps/api/directions/json?origin=Boston,MA&destination=Concord,MA&waypoints=Charlestown,MA|Lexington,MA&key=API_KEY
     //https://api.forecast.io/forecast/060abcb16ab36eee9315150eb9d7a4bd/37.8267,-122.423
     //https://api.forecast.io/forecast/060abcb16ab36eee9315150eb9d7a4bd/40.71265260000001,-74.0065973,1425730500?&exclude=[daily,hourly,minutely]
+    //https://maps.googleapis.com/maps/api/geocode/json?latlng=40.7126526,-74.006597&key=AIzaSyAAWUbXDk2a_I_VnHkGK18Us3PDGkTcci8
 
-    public String createWeatherURL(double latitude, double longitude,int ETA) throws UnsupportedEncodingException {
-
-        //weatherQueryStartTime=weatherQueryStartTime.plusMinutes(ETA);
-
-        //Just for Testing
-        System.out.println(ETA);
-        //System.out.println(weatherQueryStartTime.toString());
-
-        DateTime weatherQueryStartTimeTemp=weatherQueryStartTime.plusMinutes(ETA); //TODO well, it updates the time correctly in the URL, but the Hourly block doesn't seem to change time.
-
-
+    public String createWeatherURLTime(double latitude, double longitude,DateTime date) throws UnsupportedEncodingException {
 
         return "https://api.forecast.io/forecast/" + weatherAPIKey + "/"
                 + Double.toString(latitude) + "," + Double.toString(longitude)
-                +","+ String.valueOf(weatherQueryStartTimeTemp.getMillis() / 1000)
+                +","+ String.valueOf(date.getMillis() / 1000)
                 + "?&exclude="+URLEncoder.encode("[","UTF-8")+",daily,minutely,flags,currently,"+URLEncoder.encode("]", "UTF-8");
-                //TODO change the exclude parameters for optimized latency
+    }
+
+    public String createReverseGeocodingURL(double latitude, double longitude) throws UnsupportedEncodingException {
+        //https://maps.googleapis.com/maps/api/geocode/json?latlng=40.2149925,-74.586042&result_type=administrative_area_level_2&key=AIzaSyAAWUbXDk2a_I_VnHkGK18Us3PDGkTcci8
+        System.out.println("https://maps.googleapis.com/maps/api/geocode/json?latlng="+
+                latitude +","+longitude+"&result_type=administrative_area_level_2"+URLEncoder.encode("|","UTF-8")+
+                "administrative_area_level_1" +"&key="+directionAPIKey);
+
+        return "https://maps.googleapis.com/maps/api/geocode/json?latlng="+
+                latitude +","+longitude+"&result_type=administrative_area_level_2"+URLEncoder.encode("|","UTF-8")+
+                "administrative_area_level_1" +"&key="+directionAPIKey;
+
+
+    }
+
+    public String createWeatherURL(double latitude, double longitude) throws UnsupportedEncodingException {
+
+        return "https://api.forecast.io/forecast/" + weatherAPIKey + "/"
+                + Double.toString(latitude) + "," + Double.toString(longitude)
+                + "?&exclude="+URLEncoder.encode("[","UTF-8")+",daily,minutely,flags,currently,"+URLEncoder.encode("]", "UTF-8");
     }
 
     public String createDirectionsURL() {
@@ -137,8 +146,8 @@ public class MainActivity extends ActionBarActivity {
         results = (TextView) findViewById(R.id.results);
 
         //Just for testing
-        originEditText.setText("Richmond,VA");
-        destinationEditText.setText("New York,NY");
+        originEditText.setText("Princeton,NJ");
+        destinationEditText.setText("Lawrenceville, NJ");
         //firstWaypointEditText.setText("Toronto,Canada");
         //secondWaypointEditText.setText("Princeton,NJ");
 
@@ -164,6 +173,33 @@ public class MainActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    public void getLocationsOfWaypoints() throws JSONException, UnsupportedEncodingException {
+        JSONObject waypointLocation;
+        JSONArray waypointLocationResults;
+        JSONObject conversionObject;
+        for (Waypoint waypoint:waypointArray){
+            if (waypoint!= null){
+                if (waypoint.location==null){
+            new getInternetData().execute(createReverseGeocodingURL(waypoint.latitude, waypoint.longitude));
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            waypointLocation = new JSONObject(internetQueryResults);
+            System.out.println("Waypoint Location raw results: "+waypointLocation.toString());
+            waypointLocationResults= waypointLocation.getJSONArray("results");
+            System.out.println("Waypoint Location result object: "+waypointLocationResults.toString());
+            conversionObject=waypointLocationResults.getJSONObject(0);
+            String regex = "\\s*\\b, USA\\b\\s*";
+            waypoint.location=conversionObject.getString("formatted_address").replaceAll(regex, "");
+
+
+            System.out.println("Location String: " + waypoint.location);
+        }}}
+    }
 
     public Waypoint averageWaypoint(double latitudeStart, double longitudeStart,
                                     double latitudeEnd, double longitudeEnd,
@@ -186,6 +222,7 @@ public class MainActivity extends ActionBarActivity {
         try {
             try {
                 sendAndReceiveWeather();
+                getLocationsOfWaypoints();
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -193,6 +230,12 @@ public class MainActivity extends ActionBarActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+
+        Waypoint.transfer =waypointArray;
+        Intent intent=new Intent(this,ResultsScreen.class);
+        intent.putExtra("timeOfRequest",weatherQueryStartTime); //in order to correctly display the times.
+        startActivity(intent);
     }
 
     public int stepDurationCalculation(JSONObject step) throws JSONException {
@@ -214,7 +257,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     //Set waypoints for the entire trip
-    //TODO add the created waypoints to the array
     public void setWaypoints() throws JSONException {
         waypointArray= new Waypoint[10];
         int stepDurationTimer;
@@ -228,6 +270,7 @@ public class MainActivity extends ActionBarActivity {
         JSONObject startLocation=temp.getJSONObject("start_location");
         JSONObject endLocation=temp.getJSONObject("end_location");
         waypointArray[0]=new Waypoint(startLocation.getDouble("lat"),startLocation.getDouble("lng"),0);
+        waypointArray[0].location=String.valueOf(originEditText.getText());
         //if trip is less that 8 hours
         if (totalTravelTime<=480){
             for (int i=0; i<legsArray.length(); i++) {
@@ -286,6 +329,7 @@ public class MainActivity extends ActionBarActivity {
 
         //sets the last waypoint to the destination lat/lng
         waypointArray[index]=new Waypoint(endLocation.getDouble("lat"),endLocation.getDouble("lng"), totalTravelTime);
+        waypointArray[index].location=String.valueOf(destinationEditText.getText());
     }
 
 
@@ -323,14 +367,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void sendAndReceiveWeather() throws JSONException, UnsupportedEncodingException {
-        waypointWeatherFull = new JSONObject[waypointArray.length];
-        //waypointWeatherHourly= new JSONObject[waypointArray.length][100];
+        waypointWeatherFull = new JSONObject();
         weatherQueryStartTime = new DateTime();
-        int i=0;
         for (Waypoint waypoint: waypointArray){
             if (waypoint!=null) {
-                new getInternetData().execute(createWeatherURL(waypoint.latitude, waypoint.longitude, waypoint.minimumETA));
-
+                new getInternetData().execute(createWeatherURL(waypoint.latitude, waypoint.longitude));
                 synchronized (lock) {
                     try {
                         lock.wait();
@@ -338,14 +379,64 @@ public class MainActivity extends ActionBarActivity {
                         e.printStackTrace();
                     }
                 }
-                System.out.println(tempResults);
-                waypointWeatherFull[i] = new JSONObject(tempResults);
-                JSONArray tempHourly= waypointWeatherFull[i].getJSONObject("hourly").getJSONArray("data");
+                //System.out.println(tempResults);
+                waypointWeatherFull = new JSONObject(internetQueryResults);
+                //Assign Waypoint's Constant Variables:
+                //TODO timezone assignment (possibly through JodaTime) Get time from offset
+                waypoint.localTimeZoneID=waypointWeatherFull.getString("timezone");
+                waypoint.timeZoneOffset=waypointWeatherFull.getInt("offset");
+                DateTimeZone timeZone=DateTimeZone.forID(waypoint.localTimeZoneID);
+                waypoint.timezone= timeZone.getShortName(DateTimeUtils.currentTimeMillis());
+                waypoint.timeZoneObject=timeZone;
 
-                for (int j = 0; j < tempHourly.length(); ++j) {
-                    //waypointWeatherHourly[i][j]= tempHourly.getJSONObject(j);
-                    waypoint.weatherData[j]=tempHourly.getJSONObject(j);
-                    System.out.println(waypoint.weatherData[j]);
+
+
+
+                JSONArray tempHourly= waypointWeatherFull.getJSONObject("hourly").getJSONArray("data");
+                DateTime tempTimeStamp=weatherQueryStartTime.plusMinutes(waypoint.minimumETA); //Local variable to hold the minimum ETA of the waypoint being processed
+                int startHourIndex=0;
+                //this function finds the nearest hour in the hourly data array. The two if statements are responsible for rounding up or down.
+                int k=1;
+                while (k<tempHourly.length()){
+                    if(tempHourly.getJSONObject(k).getLong("time")>=(tempTimeStamp.getMillis()/1000)){
+                        if (tempTimeStamp.getMinuteOfHour()>30) {
+                            startHourIndex = k;
+                            System.out.println(k);
+                        }
+                        else if (tempTimeStamp.getMinuteOfHour()<=30){
+                            startHourIndex = k-1;
+                            System.out.println(k);
+                        }
+                        break;
+                    }
+                    k++;
+                }
+                //just for testing
+                System.out.println(waypoint.minimumETA);
+
+                int u=startHourIndex;
+                for (int l=0; l<waypoint.weatherData.length;l++){//while waypoint.WeatherData is not full
+                    int additionalCalls=1;
+                    if (u<tempHourly.length()) {
+                        waypoint.weatherData[l] = tempHourly.getJSONObject(u);
+                        System.out.println(waypoint.weatherData[l]);
+                        u++;
+                    }
+                    else{
+                        System.out.println("you went over 48 hours of data. Calling for additional data");
+                        new getInternetData().execute(createWeatherURLTime(waypoint.latitude, waypoint.longitude, tempTimeStamp.plusDays(additionalCalls)));
+                        synchronized (lock) {
+                            try {
+                                lock.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        waypointWeatherFull = new JSONObject(internetQueryResults);
+                        tempHourly= waypointWeatherFull.getJSONObject("hourly").getJSONArray("data");
+                        u=0;
+                    }
+
                 }
 
             }
@@ -366,7 +457,7 @@ public class MainActivity extends ActionBarActivity {
     }
         JSONObject directionsJSONData = null;
         try {
-            directionsJSONData = new JSONObject(tempResults);
+            directionsJSONData = new JSONObject(internetQueryResults);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -387,8 +478,6 @@ public class MainActivity extends ActionBarActivity {
             totalTravelTime=calculateTotalTravelTime();
 
             JSONArray steps = leg.getJSONArray("steps");
-                //calculates the total time for the trip by adding each step of the journey.
-                //TODO
             setWaypoints();
 
             for (Waypoint way: waypointArray){
@@ -408,7 +497,6 @@ public class MainActivity extends ActionBarActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //TODO relocate printing the results here
     }
 
     class getInternetData extends AsyncTask<String,String,String>{
@@ -437,7 +525,7 @@ public class MainActivity extends ActionBarActivity {
                 e.printStackTrace();
             }
             System.out.println("Testing a second time");
-            tempResults=stringBuilder.toString();
+            internetQueryResults =stringBuilder.toString();
             synchronized (lock) {
                 lock.notify();
             }

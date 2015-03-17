@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="220dp"
+    android:layout_height="350dp"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dateRow"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/dayOfWeekText"
+            android:text="Saturday"
+            android:textSize="18sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/monthText"
+            android:text=" February"
+            android:textSize="18sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/dayOfMonthText"
+            android:text=" 18"
+            android:textSize="18sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/locationRow"
+        android:layout_below="@+id/dateRow"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/locationText"
+            android:text="Location"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/timeRow"
+        android:layout_below="@id/locationRow"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/timeOfDayText"
+            android:text="Time of Day"
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/timeZoneText"
+            android:text="TimeZone"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:id="@+id/summaryIcon"
+        android:src="@drawable/sun"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/timeRow"
+        android:padding="5dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:id="@+id/summaryText"
+        android:text="Summary"
+        android:layout_below="@+id/summaryIcon"
+        android:layout_centerHorizontal="true"
+        android:textStyle="italic"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:id="@+id/rawTempText"
+        android:text="Temperature"
+        android:layout_below="@+id/summaryText"
+        android:layout_centerHorizontal="true"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:id="@+id/feelsLikeText"
+        android:text="Feels Like"
+        android:layout_below="@+id/rawTempText"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="5dp"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/precipitationRow"
+        android:layout_below="@+id/feelsLikeText"
+        android:paddingLeft="5dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Precipitation: "
+            android:id="@+id/staticChancePrecip"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/precipChanceText"
+            android:text="Chance"
+            android:layout_alignRight="@+id/staticChancePrecip"/>
+    </LinearLayout>
+
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/accumulationRow"
+       android:layout_below="@id/precipitationRow"
+       android:paddingLeft="5dp">
+
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/staticAccumulation"
+           android:text="Accumulation: "/>
+
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+
+           android:id="@+id/precipIntensityText"
+           android:text="-- inches"
+           android:layout_alignRight="@+id/staticAccumulation"/>
+       </LinearLayout>
+
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/visibilityRow"
+       android:layout_below="@id/accumulationRow"
+       android:paddingLeft="5dp">
+
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/staticVisibility"
+           android:text="Visibility: "/>
+
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+
+           android:id="@+id/visibilityText"
+           android:text="Visibility"
+           android:layout_alignRight="@id/staticVisibility"
+           />
+       </LinearLayout>
+
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/ETARow"
+       android:layout_below="@id/visibilityRow"
+       android:layout_centerHorizontal="true"
+       android:padding="10dp">
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="ETA: "
+           android:id="@+id/staticETAText"
+           android:textSize="18sp"
+           android:textStyle="bold"/>
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="07:00"
+           android:id="@+id/etaText"
+           android:textSize="18sp"
+           android:textStyle="bold"/>
+
+       </LinearLayout>
+
+</RelativeLayout>
