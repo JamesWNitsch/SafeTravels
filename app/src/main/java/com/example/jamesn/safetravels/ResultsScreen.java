@@ -5,16 +5,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.json.JSONObject;
+import org.joda.time.DateTime;
 import org.lucasr.twowayview.TwoWayView;
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 
 
 public class ResultsScreen extends ActionBarActivity {
@@ -25,6 +21,7 @@ public class ResultsScreen extends ActionBarActivity {
     private ListAdapter weatherPanelAdapter;
     private TwoWayView weatherPanels;
     static int hourDisplay;
+    public static DateTime weatherQueryTime;
 
 
     @Override
@@ -41,6 +38,10 @@ public class ResultsScreen extends ActionBarActivity {
 
         //hourlySeekbar.setMax(waypointArrayCopy[0].weatherData.length);
         Intent intent = getIntent();
+
+        Long tempTimeStamp =intent.getLongExtra("timeOfRequest",0);
+        weatherQueryTime= new DateTime(tempTimeStamp);
+
 
         weatherPanelAdapter = new WaypointAdapter(this,waypointArrayCopy);
         weatherPanels = (TwoWayView) findViewById(R.id.weatherPanels);

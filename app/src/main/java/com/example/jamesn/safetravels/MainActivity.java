@@ -234,7 +234,10 @@ public class MainActivity extends ActionBarActivity {
 
         Waypoint.transfer =waypointArray;
         Intent intent=new Intent(this,ResultsScreen.class);
-        intent.putExtra("timeOfRequest",weatherQueryStartTime); //in order to correctly display the times.
+        intent.putExtra("timeOfRequest",weatherQueryStartTime.getMillis()); //in order to correctly display the times.
+
+
+
         startActivity(intent);
     }
 

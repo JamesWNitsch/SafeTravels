@@ -21,6 +21,7 @@ public class Waypoint implements java.io.Serializable {
     DateTimeZone timeZoneObject;
 
 
+
     JSONObject[] weatherData=new JSONObject[48]; // may want to change this to say, 48-(n) where n is the hours of a given trip
 
     public static Waypoint[] transfer;

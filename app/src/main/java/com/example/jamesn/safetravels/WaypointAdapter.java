@@ -15,6 +15,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONException;
 import org.w3c.dom.Text;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by James on 3/14/2015.
  */
@@ -61,7 +63,8 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
                 precipitationIntensity=  String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("precipIntensity"));
 
                 String tempVisibility=String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("visibility"));
-                visibility=String.valueOf((Double.valueOf(tempVisibility))*0.621371);
+                DecimalFormat deci= new DecimalFormat("#.##");
+                visibility=String.valueOf(deci.format(Double.valueOf(tempVisibility)*0.621371));
                 //visibility= String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("visibility"));
 
                 //Strings inherited directly from the Waypoint class
@@ -70,7 +73,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
 
                 Long temp= ((getItem(position).weatherData[ResultsScreen.hourDisplay]).getLong("time"));
                 DateTime hourShift =new DateTime(temp*1000).withZone(DateTimeZone.forTimeZone(getItem(position).timeZoneObject.toTimeZone()));
-                DateTime waypointETA =hourShift.plusMinutes((getItem(position).minimumETA)%60);
+                DateTime waypointETA =ResultsScreen.weatherQueryTime.plusMinutes(getItem(position).minimumETA);
                 DateTimeFormatter roundedDisplayTime= DateTimeFormat.forPattern("hh:mma");
 
                 dayOfWeek=hourShift.dayOfWeek().getAsText();
