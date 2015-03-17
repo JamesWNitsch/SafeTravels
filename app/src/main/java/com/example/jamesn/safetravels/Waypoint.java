@@ -3,9 +3,6 @@ package com.example.jamesn.safetravels;
 import org.joda.time.DateTimeZone;
 import org.json.JSONObject;
 
-/**
- * Created by James on 3/5/2015.
- */
 public class Waypoint implements java.io.Serializable {
 
     double longitude;
@@ -13,7 +10,6 @@ public class Waypoint implements java.io.Serializable {
     int minimumETA;
     int stoppageTime; //Time in minutes to be stopped at this particular waypoint.
 
-    //TODO set these variables in the Main Activity
     int timeZoneOffset;
     String localTimeZoneID;
     String location;

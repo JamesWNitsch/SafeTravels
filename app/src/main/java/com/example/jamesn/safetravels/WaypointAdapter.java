@@ -9,17 +9,12 @@ import android.widget.TextView;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.JodaTimePermission;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 
-/**
- * Created by James on 3/14/2015.
- */
 public class WaypointAdapter extends ArrayAdapter<Waypoint> {
     public WaypointAdapter(Context context, Waypoint[] values) {
         super(context,R.layout.weather_panel,values);
@@ -73,7 +68,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
 
                 Long temp= ((getItem(position).weatherData[ResultsScreen.hourDisplay]).getLong("time"));
                 DateTime hourShift =new DateTime(temp*1000).withZone(DateTimeZone.forTimeZone(getItem(position).timeZoneObject.toTimeZone()));
-                DateTime waypointETA =ResultsScreen.weatherQueryTime.plusMinutes(getItem(position).minimumETA);
+                DateTime waypointETA =ResultsScreen.weatherQueryTime.plusMinutes(getItem(position).minimumETA).plusHours(ResultsScreen.hourDisplay);
                 DateTimeFormatter roundedDisplayTime= DateTimeFormat.forPattern("hh:mma");
 
                 dayOfWeek=hourShift.dayOfWeek().getAsText();
@@ -126,7 +121,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
 
         }
         LayoutInflater mInflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        theView = mInflater.inflate(R.layout.weather_panel, null);
+        theView = mInflater.inflate(R.layout.weather_panel, null); //TODO
         return theView;
     }
 }
