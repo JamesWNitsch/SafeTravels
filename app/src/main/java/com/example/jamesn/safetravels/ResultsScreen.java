@@ -14,10 +14,8 @@ import org.lucasr.twowayview.TwoWayView;
 
 
 public class ResultsScreen extends ActionBarActivity {
-    private TextView testView;
     private TextView departureTime;
     private Waypoint[] waypointArrayCopy;
-    private SeekBar hourlySeekbar;
     private ListAdapter weatherPanelAdapter;
     private TwoWayView weatherPanels;
     static int hourDisplay;
@@ -33,7 +31,10 @@ public class ResultsScreen extends ActionBarActivity {
 
 
         setContentView(R.layout.activity_results_screen);
-        waypointArrayCopy=Waypoint.transfer;
+
+       bugTest();
+
+        //waypointArrayCopy=Waypoint.transfer;
 
 
         //hourlySeekbar.setMax(waypointArrayCopy[0].weatherData.length);
@@ -49,6 +50,35 @@ public class ResultsScreen extends ActionBarActivity {
         setSeekbar();
         departureTime= (TextView) findViewById(R.id.leavingTime);
 
+        System.out.println("Here's Some Test for ya!!");
+        int wayCount=0;
+        for (Waypoint way: waypointArrayCopy){
+            System.out.println("STARTING WAYPOINT"+wayCount);
+            wayCount++;
+            for (int k=0; k<way.weatherData.length;k++){
+                //System.out.println(way.weatherData[k]);
+                if (way.weatherData[k]==null){
+                    System.out.println("WARNING AT INDEX"+ k);
+                }
+            }
+        }
+
+    }
+
+    public void bugTest(){
+        int waypointArrayLength=0;
+        for (int i=0; i<Waypoint.transfer.length;i++){
+            if (Waypoint.transfer[i]!=null){
+                waypointArrayLength++;
+            }
+        }
+
+        waypointArrayCopy=new Waypoint[waypointArrayLength];
+        for (int j=0; j<waypointArrayLength;j++){
+            if (Waypoint.transfer[j]!=null){
+                waypointArrayCopy[j]=Waypoint.transfer[j];
+            }
+        }
     }
 
     public void setSeekbar(){

@@ -68,7 +68,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
 
                 Long temp= ((getItem(position).weatherData[ResultsScreen.hourDisplay]).getLong("time"));
                 DateTime hourShift =new DateTime(temp*1000).withZone(DateTimeZone.forTimeZone(getItem(position).timeZoneObject.toTimeZone()));
-                DateTime waypointETA =ResultsScreen.weatherQueryTime.plusMinutes(getItem(position).minimumETA).plusHours(ResultsScreen.hourDisplay);
+                DateTime waypointETA =ResultsScreen.weatherQueryTime.plusMinutes(getItem(position).minimumETA).plusHours(ResultsScreen.hourDisplay).withZone(DateTimeZone.forTimeZone(getItem(position).timeZoneObject.toTimeZone()));
                 DateTimeFormatter roundedDisplayTime= DateTimeFormat.forPattern("hh:mma");
 
                 dayOfWeek=hourShift.dayOfWeek().getAsText();
@@ -76,7 +76,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
                 month= hourShift.monthOfYear().getAsText();
                 time=roundedDisplayTime.print(hourShift);
 
-                ETA=roundedDisplayTime.print(waypointETA);
+                ETA=roundedDisplayTime.print(waypointETA); //TODO ETA calculations don't take into account timezone!
 
 
 

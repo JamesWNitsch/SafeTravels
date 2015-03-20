@@ -35,7 +35,7 @@ import java.util.Arrays;
 public class MainActivity extends ActionBarActivity {
     //URL JSON request Variables
     private final String directionAPIKey = "AIzaSyDxwp7uZEZ4OkHX_uBBzeGJ_dBlmi2gVYM";
-    private final String weatherAPIKey= "060abcb16ab36eee9315150eb9d7a4bd";
+    private final String weatherAPIKey= "060abcb16ab36eee9315150eb9d7a4bd";  //TODO keep these keys in an external file. Keep them safe and reset them
     private String origin = "";
     private String destination = "";
     private String[] userWaypoints = new String[28];
@@ -320,10 +320,57 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }
             }
-            System.out.println("well.... everything worked!");
+
         }
-        else {
-            System.out.println("Haven't accounted for trips above 8 hours yet!");
+        else { //If trips are over 8 hours
+            int replaceSixty=totalTravelTime/9;
+
+            for (int i=0; i<legsArray.length(); i++) {
+                //assign steps to that leg's index
+                JSONObject leg = legsArray.getJSONObject(i);
+                JSONArray steps = leg.getJSONArray("steps");
+                for (int j=0; j<steps.length(); j++){
+                    int splitDistanceLoopCount=1;
+                    JSONObject currentStep=steps.getJSONObject(j);
+                    stepDurationTimer= stepDurationCalculation(currentStep);
+                    while (stepDurationTimer>=replaceSixty) {
+                        stepEndLocation = currentStep.getJSONObject("end_location");
+                        stepStartLocation = currentStep.getJSONObject("start_location");
+                        //Just for testing
+                        System.out.println(stepStartLocation.getDouble("lat")+" "+stepStartLocation.getDouble("lng")+ " " +
+                                stepEndLocation.getDouble("lat")+ " "+ stepEndLocation.getDouble("lng")+ " "+
+                                stepDurationCalculation(currentStep)+ " "+ ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)));
+                        System.out.println("While loop");
+
+                        waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
+                                stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
+                                stepDurationCalculation(currentStep), ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)), timeCounter);
+                        stepDurationTimer -= replaceSixty;
+                        timeCounter += replaceSixty;
+                        index++;
+                    }
+                    test=((timeCounter%replaceSixty)+stepDurationTimer);
+                    if (test>=replaceSixty){
+                        stepEndLocation = currentStep.getJSONObject("end_location");
+                        stepStartLocation = currentStep.getJSONObject("start_location");
+                        //Just for testing
+                        System.out.println(stepStartLocation.getDouble("lat")+" "+stepStartLocation.getDouble("lng")+ " " +
+                                stepEndLocation.getDouble("lat")+ " "+ stepEndLocation.getDouble("lng")+ " "+
+                                stepDurationCalculation(currentStep)+ " "+ ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)));
+                        System.out.println("if>=60");
+
+                        waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
+                                stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
+                                stepDurationCalculation(currentStep), (replaceSixty-(timeCounter%replaceSixty)), timeCounter);
+                        timeCounter+=stepDurationTimer;
+                        index++;
+                    }
+                    if (test<replaceSixty){
+                        timeCounter+=stepDurationTimer;
+                    }
+                }
+            }
+
         }
         //there should be a way to calculate an even 8-way split between the total travel time, and
         //then replace all instances of '60' above with the new variable, providing the same even
@@ -437,6 +484,7 @@ public class MainActivity extends ActionBarActivity {
                         waypointWeatherFull = new JSONObject(internetQueryResults);
                         tempHourly= waypointWeatherFull.getJSONObject("hourly").getJSONArray("data");
                         u=0;
+                        l--;
                     }
 
                 }
