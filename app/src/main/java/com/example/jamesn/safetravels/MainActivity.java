@@ -33,6 +33,8 @@ import java.util.Arrays;
 
 
 public class MainActivity extends ActionBarActivity {
+
+    int op = 0;
     //URL JSON request Variables
     private final String directionAPIKey = "AIzaSyDxwp7uZEZ4OkHX_uBBzeGJ_dBlmi2gVYM";
     private final String weatherAPIKey= "060abcb16ab36eee9315150eb9d7a4bd";  //TODO keep these keys in an external file. Keep them safe and reset them
@@ -145,7 +147,7 @@ public class MainActivity extends ActionBarActivity {
         results = (TextView) findViewById(R.id.results);
 
         //Just for testing
-        originEditText.setText("Richmond, VA");
+        originEditText.setText("Cape May, NJ");
         destinationEditText.setText("New York, NY");
         //firstWaypointEditText.setText("Toronto,Canada");
         //secondWaypointEditText.setText("Princeton,NJ");
@@ -202,10 +204,13 @@ public class MainActivity extends ActionBarActivity {
 
     public Waypoint averageWaypoint(double latitudeStart, double longitudeStart,
                                     double latitudeEnd, double longitudeEnd,
-                                    int fullDuration, int timeTraveled, int timeCounter){
+                                    int fullDuration, int timeTraveled, int timeCounter, int interval){
         double scale = ((double)fullDuration)/((double)timeTraveled);
+
+
+        System.out.println("Waypoint#: "+ op+ "  Full Duration: "+ fullDuration+ "  time Traveled: "+ timeTraveled + "   Time counter: "+timeCounter+"  Passed ETA:" + (timeCounter+timeTraveled));
         return new Waypoint((((latitudeEnd-latitudeStart)/scale)+latitudeStart),(((longitudeEnd-longitudeStart)/scale)+longitudeStart),
-                (timeCounter+timeTraveled));
+                (timeCounter+interval));
     }
 
     public void commitAndSend(View view) {
@@ -261,7 +266,7 @@ public class MainActivity extends ActionBarActivity {
     //Set waypoints for the entire trip
     public void setWaypoints() throws JSONException {
         waypointArray= new Waypoint[10];
-        int stepDurationTimer;
+        int stepDurationTimer; //A timer for each step, starting at the full length of the step, reducing by the waypoint distance if the total is greater than the waypoint distance
         int timeCounter=0;
         int test;
         int index=1; //Set to 1 because index 0 is automatically set as the starting location
@@ -294,10 +299,11 @@ public class MainActivity extends ActionBarActivity {
 
                         waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
                                 stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
-                                stepDurationCalculation(currentStep), ((60 * splitDistanceLoopCount) - (timeCounter % 60)), timeCounter);
+                                stepDurationCalculation(currentStep), ((60 * splitDistanceLoopCount) - (timeCounter % 60)), timeCounter,(60- (timeCounter % 60)));
                         stepDurationTimer -= 60;
                         timeCounter += 60;
                         index++;
+                        splitDistanceLoopCount++;
                     }
                     test=((timeCounter%60)+stepDurationTimer);
                     if (test>=60){
@@ -311,7 +317,7 @@ public class MainActivity extends ActionBarActivity {
 
                         waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
                                 stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
-                                stepDurationCalculation(currentStep), (60-(timeCounter%60)), timeCounter);
+                                stepDurationCalculation(currentStep), ((60*splitDistanceLoopCount)-(timeCounter%60)), timeCounter,(60-(timeCounter%60)));//TODO if this change works, change this value as well
                         timeCounter+=stepDurationTimer;
                         index++;
                     }
@@ -323,7 +329,7 @@ public class MainActivity extends ActionBarActivity {
 
         }
         else { //If trips are over 8 hours
-            int replaceSixty=totalTravelTime/9;
+            int replaceSixty=totalTravelTime/8; //TODO figure out the perfect number of divisions. 8 CAN be too low, 9 will often throw errors.
 
             for (int i=0; i<legsArray.length(); i++) {
                 //assign steps to that leg's index
@@ -336,32 +342,23 @@ public class MainActivity extends ActionBarActivity {
                     while (stepDurationTimer>=replaceSixty) {
                         stepEndLocation = currentStep.getJSONObject("end_location");
                         stepStartLocation = currentStep.getJSONObject("start_location");
-                        //Just for testing
-                        System.out.println(stepStartLocation.getDouble("lat")+" "+stepStartLocation.getDouble("lng")+ " " +
-                                stepEndLocation.getDouble("lat")+ " "+ stepEndLocation.getDouble("lng")+ " "+
-                                stepDurationCalculation(currentStep)+ " "+ ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)));
-                        System.out.println("While loop");
 
                         waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
                                 stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
-                                stepDurationCalculation(currentStep), ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)), timeCounter);
+                                stepDurationCalculation(currentStep), ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)), timeCounter,(replaceSixty- (timeCounter % replaceSixty)));
                         stepDurationTimer -= replaceSixty;
                         timeCounter += replaceSixty;
                         index++;
+                        splitDistanceLoopCount++;
                     }
-                    test=((timeCounter%replaceSixty)+stepDurationTimer);
+                    test=((timeCounter%replaceSixty)+stepDurationTimer);//TODO either this line with *durationLoop
                     if (test>=replaceSixty){
                         stepEndLocation = currentStep.getJSONObject("end_location");
                         stepStartLocation = currentStep.getJSONObject("start_location");
-                        //Just for testing
-                        System.out.println(stepStartLocation.getDouble("lat")+" "+stepStartLocation.getDouble("lng")+ " " +
-                                stepEndLocation.getDouble("lat")+ " "+ stepEndLocation.getDouble("lng")+ " "+
-                                stepDurationCalculation(currentStep)+ " "+ ((replaceSixty * splitDistanceLoopCount) - (timeCounter % replaceSixty)));
-                        System.out.println("if>=60");
 
                         waypointArray[index]=averageWaypoint(stepStartLocation.getDouble("lat"), stepStartLocation.getDouble("lng"),
                                 stepEndLocation.getDouble("lat"), stepEndLocation.getDouble("lng"),
-                                stepDurationCalculation(currentStep), (replaceSixty-(timeCounter%replaceSixty)), timeCounter);
+                                stepDurationCalculation(currentStep), ((replaceSixty* splitDistanceLoopCount)-(timeCounter%replaceSixty)), timeCounter,(replaceSixty-(timeCounter%replaceSixty))); //TODO or this line
                         timeCounter+=stepDurationTimer;
                         index++;
                     }
@@ -431,15 +428,11 @@ public class MainActivity extends ActionBarActivity {
                 //System.out.println(tempResults);
                 waypointWeatherFull = new JSONObject(internetQueryResults);
                 //Assign Waypoint's Constant Variables:
-                //TODO timezone assignment (possibly through JodaTime) Get time from offset
                 waypoint.localTimeZoneID=waypointWeatherFull.getString("timezone");
                 waypoint.timeZoneOffset=waypointWeatherFull.getInt("offset");
                 DateTimeZone timeZone=DateTimeZone.forID(waypoint.localTimeZoneID);
                 waypoint.timezone= timeZone.getShortName(DateTimeUtils.currentTimeMillis());
                 waypoint.timeZoneObject=timeZone;
-
-
-
 
                 JSONArray tempHourly= waypointWeatherFull.getJSONObject("hourly").getJSONArray("data");
                 DateTime tempTimeStamp=weatherQueryStartTime.plusMinutes(waypoint.minimumETA); //Local variable to hold the minimum ETA of the waypoint being processed
@@ -447,13 +440,12 @@ public class MainActivity extends ActionBarActivity {
                 //this function finds the nearest hour in the hourly data array. The two if statements are responsible for rounding up or down.
                 int k=1;
                 while (k<tempHourly.length()){
-                    if(tempHourly.getJSONObject(k).getLong("time")>=(tempTimeStamp.getMillis()/1000)){
-                        if (tempTimeStamp.getMinuteOfHour()>30) {
+                    if(tempHourly.getJSONObject(k).getLong("time")>=(tempTimeStamp.getMillis()/1000)) {
+                        if (tempTimeStamp.getMinuteOfHour() > 30) {
                             startHourIndex = k;
                             System.out.println(k);
-                        }
-                        else if (tempTimeStamp.getMinuteOfHour()<=30){
-                            startHourIndex = k-1;
+                        } else if (tempTimeStamp.getMinuteOfHour() <= 30) {
+                            startHourIndex = k - 1;
                             System.out.println(k);
                         }
                         break;
@@ -464,15 +456,15 @@ public class MainActivity extends ActionBarActivity {
                 System.out.println(waypoint.minimumETA);
 
                 int u=startHourIndex;
-                for (int l=0; l<waypoint.weatherData.length;l++){//while waypoint.WeatherData is not full
-                    int additionalCalls=1;
-                    if (u<tempHourly.length()) {
+                int additionalCalls=2;
+                for (int l=0; l<waypoint.weatherData.length;l++){//while waypoint.WeatherData is not full //TODO Add "-1" after length to possibly prevent additional meaningless calls
+                    if (u<tempHourly.length()&& tempHourly.getJSONObject(u).getLong("time")<tempTimeStamp.plusDays(additionalCalls).minusHours(Integer.valueOf(tempTimeStamp.hourOfDay().getAsText())+1).getMillis()/1000) { //Cut the initial call short, at the time the next call will begin. (24 hour calls begin at 4:00AM *GMT* [12AM EST])
                         waypoint.weatherData[l] = tempHourly.getJSONObject(u);
                         System.out.println(waypoint.weatherData[l]);
                         u++;
                     }
                     else{
-                        System.out.println("you went over 48 hours of data. Calling for additional data");
+                        System.out.println("you went over 48 hours of data. Calling for additional data"); //TODO, SOMETHING ABOUT THIS CALL IS FUCKING EVERYTHING UP
                         new getInternetData().execute(createWeatherURLTime(waypoint.latitude, waypoint.longitude, tempTimeStamp.plusDays(additionalCalls)));
                         synchronized (lock) {
                             try {
@@ -483,6 +475,7 @@ public class MainActivity extends ActionBarActivity {
                         }
                         waypointWeatherFull = new JSONObject(internetQueryResults);
                         tempHourly= waypointWeatherFull.getJSONObject("hourly").getJSONArray("data");
+                        additionalCalls++;
                         u=0;
                         l--;
                     }

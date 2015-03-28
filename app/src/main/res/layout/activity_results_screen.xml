@@ -39,13 +39,17 @@
             android:drawSelectorOnTop="false"
             tools:context=".MainActivity"
             android:layout_below="@+id/leavingTimeRow"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/weatherPanels"
+            android:id="@+id/travelTimeText"
+            android:text="Total Trip Time: "/>
 
         <SeekBar
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="30dp"
-            android:paddingRight="30dp"
-            android:paddingTop="15dp"
+            android:padding="30dp"
             android:id="@+id/hourlySeekbar"
             android:layout_below="@+id/weatherPanels"/>
 

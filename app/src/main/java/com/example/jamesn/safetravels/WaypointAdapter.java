@@ -1,10 +1,15 @@
 package com.example.jamesn.safetravels;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.joda.time.DateTime;
@@ -41,7 +46,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
             String temperature = "Unable to load";
             String precipitationChance="Unable to load";
             String precipitationIntensity= "Unable to load";
-            String visibility="Unable to load";
+            String visibility="Out of range";
             String dayOfWeek="Unable to load";
             String dayOfMonth="Unable to load";
             String month="Unable to load";
@@ -49,17 +54,26 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
             String timeZone="Unable to load";
             String location="Unable to load";
             String ETA = "Unable to load";
+            DecimalFormat deci= new DecimalFormat("#.##");
+            DecimalFormat deciShort= new DecimalFormat("#");
+            String summaryIconName="sun";
 
             try {
                 summary = String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("summary"));
                 feelsLike= String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("apparentTemperature"));
                 temperature=  String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("temperature"));
-                precipitationChance=  String.valueOf(Double.valueOf(String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("precipProbability")))*100);
+                precipitationChance=  String.valueOf(deciShort.format(Double.valueOf(String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("precipProbability")))*100));
                 precipitationIntensity=  String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("precipIntensity"));
+                summaryIconName = String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("icon"));
+                summaryIconName = summaryIconName.replaceAll("-","_");
 
-                String tempVisibility=String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("visibility"));
-                DecimalFormat deci= new DecimalFormat("#.##");
-                visibility=String.valueOf(deci.format(Double.valueOf(tempVisibility)*0.621371));
+
+                if (getItem(position).weatherData[ResultsScreen.hourDisplay].has("visibility")) {
+                    String tempVisibility = String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("visibility"));
+
+                    visibility=String.valueOf(deci.format(Double.valueOf(tempVisibility))+ " miles");
+                }
+
                 //visibility= String.valueOf(getItem(position).weatherData[ResultsScreen.hourDisplay].get("visibility"));
 
                 //Strings inherited directly from the Waypoint class
@@ -76,7 +90,7 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
                 month= hourShift.monthOfYear().getAsText();
                 time=roundedDisplayTime.print(hourShift);
 
-                ETA=roundedDisplayTime.print(waypointETA); //TODO ETA calculations don't take into account timezone!
+                ETA=roundedDisplayTime.print(waypointETA);
 
 
 
@@ -99,18 +113,26 @@ public class WaypointAdapter extends ArrayAdapter<Waypoint> {
             TextView timeZoneTextView = (TextView) theView.findViewById(R.id.timeZoneText);
             TextView locationTextView = (TextView) theView.findViewById(R.id.locationText);
             TextView etaTextView = (TextView) theView.findViewById(R.id.etaText);
+            ImageView summaryIcon= (ImageView) theView.findViewById(R.id.summaryIcon);
+
+
 
             summaryTextView.setText(summary);
             apparentTempTextView.setText("Feels like: "+feelsLike+"℉");
             temperatureTextView.setText(temperature+"℉");
             precipitationChanceTextView.setText(precipitationChance+"%");
             precipIntensityTextView.setText(precipitationIntensity+" inches");
-            visibilityTextView.setText(visibility+" miles");
-            timeZoneTextView.setText(timeZone);
+            visibilityTextView.setText(visibility);
+            timeZoneTextView.setText(" "+timeZone);
             locationTextView.setText(location);
 
+            int drawableImageId = getContext().getResources().getIdentifier(summaryIconName,"drawable", getContext().getPackageName());
 
-            dayOfWeekTextView.setText(dayOfWeek+" ");
+
+            summaryIcon.setImageResource(drawableImageId);
+
+
+            dayOfWeekTextView.setText(dayOfWeek + " ");
             dayOfMonthTextView.setText(dayOfMonth);
             monthTextView.setText(month+" ");
             timeTextView.setText(time);

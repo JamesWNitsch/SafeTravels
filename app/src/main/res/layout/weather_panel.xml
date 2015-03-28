@@ -68,12 +68,12 @@
 
             android:id="@+id/timeZoneText"
             android:text="TimeZone"
-            android:textSize="12sp"/>
+            android:textSize="10sp"/>
     </LinearLayout>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
 
         android:id="@+id/summaryIcon"
         android:src="@drawable/sun"
@@ -109,7 +109,8 @@
         android:text="Feels Like"
         android:layout_below="@+id/rawTempText"
         android:layout_centerHorizontal="true"
-        android:paddingBottom="5dp"/>
+        android:paddingBottom="5dp"
+        android:textStyle="italic"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
