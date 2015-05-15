@@ -5,11 +5,14 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListAdapter;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.joda.time.DateTime;
+import org.json.JSONException;
 import org.lucasr.twowayview.TwoWayView;
 
 import java.text.DecimalFormat;
@@ -22,6 +25,7 @@ public class ResultsScreen extends ActionBarActivity {
     private TwoWayView weatherPanels;
     static int hourDisplay;
     public static DateTime weatherQueryTime;
+    private Double[] hourlySafetyResults;
 
 
     @Override
@@ -31,9 +35,9 @@ public class ResultsScreen extends ActionBarActivity {
 
         setContentView(R.layout.activity_results_screen);
 
-       bugTest();
+        bugTest();
 
-        //waypointArrayCopy=Waypoint.transfer;
+        hourlySafetyResults= new Double[waypointArrayCopy[1].weatherData.length];
 
 
         //hourlySeekbar.setMax(waypointArrayCopy[0].weatherData.length);
@@ -78,6 +82,8 @@ public class ResultsScreen extends ActionBarActivity {
                 waypointArrayCopy[j]=Waypoint.transfer[j];
             }
         }
+
+
 
         System.out.println("Bug Testing for the first waypoint in the array: ");
         for (int l=0; l<waypointArrayCopy[0].weatherData.length; l++){
@@ -158,5 +164,66 @@ public class ResultsScreen extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void calculateSafestTrip(View view) throws JSONException {
+        double visibility;
+        double precipProbability;
+        int precipType;
+        String typePrecip;
+        int hoursFromNow=0; //counter
+        int waypointNumber=0;
+        double[] tempCalc=new double[waypointArrayCopy.length];
+
+
+        for (hoursFromNow=0;hoursFromNow<waypointArrayCopy[1].weatherData.length;hoursFromNow++){
+            waypointNumber=0;
+            for (Waypoint way: waypointArrayCopy){
+
+                //Probability of precipitation
+                precipProbability=Double.valueOf(String.valueOf(way.weatherData[hoursFromNow].get("precipProbability")));
+
+                //Visibility
+                if (way.weatherData[hoursFromNow].has("visibility")&&Double.valueOf(String.valueOf(way.weatherData[hoursFromNow].get("precipProbability")))<1){
+                    visibility= 1-Double.valueOf(String.valueOf(way.weatherData[hoursFromNow].get("precipProbability")));
+                }
+                else{
+                    visibility=0;
+                }
+
+                //Precipitation Type
+                if (way.weatherData[hoursFromNow].has("precipType")){
+                    typePrecip=String.valueOf(way.weatherData[hoursFromNow].get("precipType"));
+                    if (typePrecip=="snow"){
+                        precipType=3;
+                    }
+                    else if (typePrecip=="rain"){
+                        precipType=1;
+                    }
+                    else if (typePrecip=="sleet"){
+                        precipType=4;
+                    }
+                    else if (typePrecip=="hail"){
+                        precipType=2;
+                    }
+                    else{
+                        precipType=0;
+                    }
+                }
+                else{
+                    precipType=0;
+                }
+
+                tempCalc[waypointNumber] = (precipProbability*precipType) + (visibility*3);
+                waypointNumber++;
+
+            }
+            double total=0;
+            for (Double d: tempCalc){
+                total+=d;
+            }
+            hourlySafetyResults[hoursFromNow]=total;
+            System.out.println(hoursFromNow+ ":  " +hourlySafetyResults[hoursFromNow]);
+        }
     }
 }

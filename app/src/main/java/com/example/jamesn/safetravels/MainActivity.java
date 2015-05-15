@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.apache.http.HttpEntity;
@@ -44,13 +47,15 @@ public class MainActivity extends ActionBarActivity {
     private Waypoint[] waypointArray= new Waypoint[10];
     private DateTime weatherQueryStartTime;
 
-    //TextViews/EditTexts
+    //UI elements
     private EditText originEditText;
     private EditText destinationEditText;
     private EditText firstWaypointEditText;
     private EditText secondWaypointEditText;
     private EditText thirdWaypointEditText;
     private TextView results;
+    private Button startButton;
+
 
     public String internetQueryResults;
     public Object lock= new Object();
@@ -145,6 +150,8 @@ public class MainActivity extends ActionBarActivity {
         secondWaypointEditText = (EditText) findViewById(R.id.secondWaypointEditText);
         thirdWaypointEditText = (EditText) findViewById(R.id.thirdWaypointEditText);
         results = (TextView) findViewById(R.id.results);
+        startButton= (Button) findViewById(R.id.startButton);
+
 
         //Just for testing
         originEditText.setText("Cape May, NJ");
@@ -214,6 +221,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void commitAndSend(View view) {
+        startButton.setClickable(false);
+
         origin = String.valueOf(originEditText.getText());
         destination = String.valueOf(destinationEditText.getText());
         origin = String.valueOf(originEditText.getText());
@@ -222,10 +231,14 @@ public class MainActivity extends ActionBarActivity {
         userWaypoints[1]= String.valueOf(secondWaypointEditText.getText());
         userWaypoints[2]= String.valueOf(thirdWaypointEditText.getText());
 
+        results.setText("Getting driving directions");
+
         sendAndReceiveDirections();
         try {
             try {
+                results.setText("Parsing weather data");
                 sendAndReceiveWeather();
+                results.setText("Retrieving location data");
                 getLocationsOfWaypoints();
 
         } catch (UnsupportedEncodingException e) {
@@ -241,7 +254,7 @@ public class MainActivity extends ActionBarActivity {
         intent.putExtra("timeOfRequest",weatherQueryStartTime.getMillis()); //in order to correctly display the times.
 
 
-
+        startButton.setClickable(true);
         startActivity(intent);
     }
 
@@ -369,9 +382,7 @@ public class MainActivity extends ActionBarActivity {
             }
 
         }
-        //there should be a way to calculate an even 8-way split between the total travel time, and
-        //then replace all instances of '60' above with the new variable, providing the same even
-        //split. Do this after.
+
 
         //sets the last waypoint to the destination lat/lng
         waypointArray[index]=new Waypoint(endLocation.getDouble("lat"),endLocation.getDouble("lng"), totalTravelTime);
@@ -464,7 +475,7 @@ public class MainActivity extends ActionBarActivity {
                         u++;
                     }
                     else{
-                        System.out.println("you went over 48 hours of data. Calling for additional data"); //TODO, SOMETHING ABOUT THIS CALL IS FUCKING EVERYTHING UP
+                        System.out.println("you went over 48 hours of data. Calling for additional data");
                         new getInternetData().execute(createWeatherURLTime(waypoint.latitude, waypoint.longitude, tempTimeStamp.plusDays(additionalCalls)));
                         synchronized (lock) {
                             try {
@@ -504,7 +515,7 @@ public class MainActivity extends ActionBarActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        results.setText(directionsJSONData.toString());
+        //results.setText(directionsJSONData.toString());
 
         String duration="Something went wrong in SendAndReceive()";
         //Now Parse Json Data into the Global variables

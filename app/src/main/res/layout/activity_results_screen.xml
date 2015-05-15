@@ -52,6 +52,12 @@
             android:padding="30dp"
             android:id="@+id/hourlySeekbar"
             android:layout_below="@+id/weatherPanels"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Get best departure time."
+            android:layout_below="@+id/hourlySeekbar"
+            android:onClick="calculateSafestTrip"/>
 
     <TextView
         android:layout_width="wrap_content"

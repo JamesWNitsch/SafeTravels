@@ -85,6 +85,8 @@
                 android:layout_below="@+id/secondWaypointEditText"
                 android:layout_alignParentRight="true"/>
 
+
+
         </RelativeLayout>
 
        </LinearLayout>
@@ -94,8 +96,9 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Load 'er up!"
-        android:onClick="commitAndSend"/>
+        android:text="Load Weather Data"
+        android:onClick="commitAndSend"
+        android:id="@+id/startButton"/>
     <TextView
         android:paddingTop="20dp"
         android:layout_width="wrap_content"
