@@ -31,7 +31,8 @@ public class ResultsScreen extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) { //Define all future UI objects in here in here.
         super.onCreate(savedInstanceState);
-        SeekBar hourlySeekbar=(SeekBar)findViewById(R.id.hourlySeekbar);
+        MainActivity.progressbar.setVisibility(View.INVISIBLE);
+
 
         setContentView(R.layout.activity_results_screen);
 
@@ -52,6 +53,10 @@ public class ResultsScreen extends ActionBarActivity {
         weatherPanels.setAdapter(weatherPanelAdapter);
         setSeekbar();
         departureTime= (TextView) findViewById(R.id.leavingTime);
+
+        //RESETS THE PROGRESS BAR IN THE INITIAL WINDOW
+        MainActivity.progressbar.setProgress(0);
+        SeekBar hourlySeekbar=(SeekBar)findViewById(R.id.hourlySeekbar);
 
         /*System.out.println("Here's Some Test for ya!!");
         int wayCount=0;

@@ -105,6 +105,12 @@
         android:layout_height="wrap_content"
         android:hint="Display ResultURL"
         android:id="@+id/results"/>
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:id="@+id/progressBar"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        android:visibility="invisible"/>
 
 
 </LinearLayout>

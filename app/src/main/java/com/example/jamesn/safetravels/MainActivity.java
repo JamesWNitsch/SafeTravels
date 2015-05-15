@@ -2,6 +2,7 @@ package com.example.jamesn.safetravels;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 
@@ -37,6 +38,7 @@ import java.util.Arrays;
 
 public class MainActivity extends ActionBarActivity {
 
+    private Handler uiHandler;
     int op = 0;
     //URL JSON request Variables
     private final String directionAPIKey = "AIzaSyDxwp7uZEZ4OkHX_uBBzeGJ_dBlmi2gVYM";
@@ -55,10 +57,13 @@ public class MainActivity extends ActionBarActivity {
     private EditText thirdWaypointEditText;
     private TextView results;
     private Button startButton;
+    private String queryStatus="";
+    public static ProgressBar progressbar;
 
 
     public String internetQueryResults;
     public Object lock= new Object();
+    public Object lock2=new Object();
 
     //Json Arrays and Objects for weather and directions
     public JSONArray legsArray;
@@ -151,6 +156,7 @@ public class MainActivity extends ActionBarActivity {
         thirdWaypointEditText = (EditText) findViewById(R.id.thirdWaypointEditText);
         results = (TextView) findViewById(R.id.results);
         startButton= (Button) findViewById(R.id.startButton);
+        progressbar= (ProgressBar) findViewById(R.id.progressBar);
 
 
         //Just for testing
@@ -222,6 +228,8 @@ public class MainActivity extends ActionBarActivity {
 
     public void commitAndSend(View view) {
         startButton.setClickable(false);
+        progressbar.setVisibility(View.VISIBLE);
+        progressbar.setMax(100);
 
         origin = String.valueOf(originEditText.getText());
         destination = String.valueOf(destinationEditText.getText());
@@ -231,31 +239,47 @@ public class MainActivity extends ActionBarActivity {
         userWaypoints[1]= String.valueOf(secondWaypointEditText.getText());
         userWaypoints[2]= String.valueOf(thirdWaypointEditText.getText());
 
-        results.setText("Getting driving directions");
 
-        sendAndReceiveDirections();
-        try {
-            try {
-                results.setText("Parsing weather data");
-                sendAndReceiveWeather();
-                results.setText("Retrieving location data");
-                getLocationsOfWaypoints();
+        new Thread(new Runnable() {
+            public void run() {
+                progressbar.setProgress(10);
+                queryStatus="Retrieving probable route";
+                sendAndReceiveDirections();
+                try {
+                    try {
+                        progressbar.setProgress(20);
+                        queryStatus="Parsing weather data";
+                        sendAndReceiveWeather();
+                        progressbar.setProgress(40);
+                        queryStatus="Retrieving location data";
+                        getLocationsOfWaypoints();
+                        progressbar.setProgress(80);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Waypoint.transfer =waypointArray;
+                Intent intent=new Intent(MainActivity.this,ResultsScreen.class);
+                intent.putExtra("timeOfRequest",weatherQueryStartTime.getMillis()); //in order to correctly display the times.
+                progressbar.setProgress(100);
+                startButton.setClickable(true);
+                startActivity(intent);
 
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            }
+        }).start();
+
+        uiHandler= new Handler();
+        Runnable queryProgressUI=new Runnable() {
+            public void run() {
+                results.setText(queryStatus);
+                uiHandler.postDelayed(this,75);
+            }
+        };
+        uiHandler.postDelayed(queryProgressUI,75);
 
 
-        Waypoint.transfer =waypointArray;
-        Intent intent=new Intent(this,ResultsScreen.class);
-        intent.putExtra("timeOfRequest",weatherQueryStartTime.getMillis()); //in order to correctly display the times.
-
-
-        startButton.setClickable(true);
-        startActivity(intent);
     }
 
     public int stepDurationCalculation(JSONObject step) throws JSONException {
@@ -546,7 +570,7 @@ public class MainActivity extends ActionBarActivity {
             JSONObject durationObject = leg.getJSONObject("duration");
             duration = durationObject.getString("text");
 
-            results.setText(steps.toString());
+            //results.setText(steps.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
